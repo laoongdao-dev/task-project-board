@@ -1,6 +1,6 @@
-# 🚀 Project Name
+# 🗂️ ระบบจัดการงานที่ต้องทำ (Task/Project Board)
 
-> คำอธิบายสั้น ๆ เกี่ยวกับโปรเจกต์นี้ ว่ามันทำอะไร และเจ๋งยังไง ✨
+> ระบบจัดการงานที่ต้องทำ (Task/Project Board) เป็นเว็บแอปพลิเคชันที่ช่วยให้ผู้ใช้สามารถสร้าง จัดการ และติดตามสถานะของงานได้อย่างเป็นระบบ โดยใช้รูปแบบกระดานงาน (Kanban Board) เช่น To Do, Doing, และ Done เพื่อเพิ่มประสิทธิภาพในการทำงานและจัดลำดับความสำคัญของงาน ✨
 
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
