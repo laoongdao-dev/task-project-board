@@ -73,10 +73,10 @@ export default function CalendarPage() {
     // sample events
     const seed: Record<string, { title: string; priority?: string }[]> = {}
     const d1 = new Date()
-    seed[formatYYYYMMDD(d1)] = [{ title: "Meeting with Team", priority: "High" }]
+    seed[formatYYYYMMDD(d1)] = []
     const d2 = new Date()
     d2.setDate(d2.getDate() + 2)
-    seed[formatYYYYMMDD(d2)] = [{ title: "Deadline: UI Design", priority: "Medium" }]
+    seed[formatYYYYMMDD(d2)] = []
     return seed
   })
 

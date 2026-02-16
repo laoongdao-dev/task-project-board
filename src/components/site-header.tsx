@@ -9,6 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 export function SiteHeader() {
   const pathname = usePathname()
 
+  const showExtra =
+  pathname === "/dashboard" || pathname === "/calendar"
+
   const getTitle = () => {
     if (pathname === "/dashboard") return "Dashboard"
     if (pathname === "/task") return "My Tasks"
@@ -26,6 +29,8 @@ export function SiteHeader() {
           className="mx-2 data-[orientation=vertical]:h-4"
         />
         <h1 className="text-base font-medium">{getTitle()}</h1>
+
+        {showExtra && (
         <div className="ml-auto flex items-center gap-3">
           {/* Search */}
           <Input
@@ -44,6 +49,7 @@ export function SiteHeader() {
             <AvatarFallback>LD</AvatarFallback>
           </Avatar>
         </div>
+      )}
       </div>
     </header>
   )

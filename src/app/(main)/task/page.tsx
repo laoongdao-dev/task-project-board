@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 type Task = {
   id: string
   title: string
+  description?: string
   assignee?: { name: string; avatar?: string; initials?: string }
   due?: string
   priority?: "High" | "Medium" | "Low"
@@ -38,6 +39,7 @@ function TaskCard({ task, listeners, attributes, setNodeRef }: { task: Task; lis
             JSON.stringify({
               id: task.id,
               header: task.title,
+              description: task.description || "",
               type: "Task",
               status: "To Do",
               target: task.due || "",
@@ -50,6 +52,7 @@ function TaskCard({ task, listeners, attributes, setNodeRef }: { task: Task; lis
           window.__draggedSection = {
             id: task.id,
             header: task.title,
+            description: task.description || "",
             type: "Task",
             status: "To Do",
             target: task.due || "",
@@ -73,8 +76,14 @@ function TaskCard({ task, listeners, attributes, setNodeRef }: { task: Task; lis
       className="p-3 rounded-lg border bg-card cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/50 transition-all group"
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="font-medium text-sm group-hover:text-primary transition-colors">{task.title}</div>
+          {task.description && (
+            <div className="w-full text-xs text-muted-foreground mt-1 break-words line-clamp-2">
+              {task.description}
+            </div>
+          )}
+
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1 flex-1">
               <Avatar className="size-5">
@@ -115,7 +124,7 @@ export default function TaskPage() {
     return initial
   })
   const [open, setOpen] = React.useState(false)
-  const [form, setForm] = React.useState({ title: "", assignee: "", due: "", priority: "Medium" })
+  const [form, setForm] = React.useState({ title: "", description: "", assignee: "", due: "", priority: "Medium" })
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -158,9 +167,9 @@ export default function TaskPage() {
   function handleAddTask(e: React.FormEvent) {
     e.preventDefault()
     const id = Date.now().toString()
-    const newTask: Task = { id, title: form.title, assignee: { name: form.assignee, initials: form.assignee?.slice(0,1).toUpperCase() }, due: form.due, priority: form.priority as Task["priority"] }
+    const newTask: Task = { id, title: form.title, description: form.description, assignee: { name: form.assignee, initials: form.assignee?.slice(0,1).toUpperCase() }, due: form.due, priority: form.priority as Task["priority"] }
     setColumns((prev) => ({ ...prev, todo: [newTask, ...prev.todo] }))
-    setForm({ title: "", assignee: "", due: "", priority: "Medium" })
+    setForm({ title: "", description: "", assignee: "", due: "", priority: "Medium" })
     setOpen(false)
   }
 
@@ -326,6 +335,17 @@ export default function TaskPage() {
               <div>
                 <label className="text-sm font-medium">Title</label>
                 <Input value={form.title} onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))} />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm((s) => ({ ...s, description: e.target.value }))
+                  }
+                  className="w-full min-h-[80px] rounded-md border px-3 py-2 text-sm"
+                  placeholder="Enter task description..."
+                />
               </div>
               <div>
                 <label className="text-sm font-medium">Assignee</label>
