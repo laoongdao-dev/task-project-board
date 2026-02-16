@@ -16,7 +16,10 @@ function endOfMonth(date: Date) {
 }
 
 function formatYYYYMMDD(d: Date) {
-  return d.toISOString().slice(0, 10)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
 }
 
 function getMonthMatrix(year: number, month: number) {
@@ -148,35 +151,55 @@ export default function CalendarPage() {
               <div className="text-center">Sat</div>
             </div>
             <div className="grid grid-cols-7 gap-2">
-              {monthMatrix.map((week, wi) => (
-                <div key={wi} className="space-y-2">
-                  {week.map((day) => {
-                    const key = formatYYYYMMDD(day)
-                    const isToday = key === formatYYYYMMDD(today)
-                    const inMonth = day.getMonth() === viewDate.getMonth()
-                    const dayEvents = events[key] || []
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => openAdd(day)}
-                        className={`w-full text-left p-2 rounded-lg transition-colors ${inMonth ? "bg-white" : "text-muted-foreground bg-background"} hover:bg-gray-50`}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-7 h-7 flex items-center justify-center ${isToday ? "bg-foreground text-white rounded-full" : ""}`}>{day.getDate()}</div>
-                          </div>
-                        </div>
-                        <div className="mt-2 space-y-1">
-                          {dayEvents.slice(0,2).map((ev, i) => (
-                            <div key={i} className={`inline-block px-2 py-0.5 rounded-full text-xs ${ev.priority === 'High' ? 'bg-red-100 text-red-800' : ev.priority === 'Medium' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>{ev.title}</div>
-                          ))}
-                          {dayEvents.length > 2 && <div className="text-xs text-muted-foreground">+{dayEvents.length - 2} more</div>}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              ))}
+              {monthMatrix.flat().map((day) => {
+  const key = formatYYYYMMDD(day)
+  const isToday = key === formatYYYYMMDD(today)
+  const inMonth = day.getMonth() === viewDate.getMonth()
+  const dayEvents = events[key] || []
+
+  return (
+    <button
+      key={key}
+      onClick={() => openAdd(day)}
+      className={`h-28 p-2 rounded-xl border text-left transition-all
+        ${inMonth ? "bg-white" : "bg-muted/40 text-muted-foreground"}
+        hover:shadow-sm hover:border-primary/40`}
+    >
+      <div className="flex justify-between items-start">
+        <div
+          className={`w-8 h-8 flex items-center justify-center text-sm font-medium
+          ${isToday ? "bg-primary text-white rounded-full" : ""}`}
+        >
+          {day.getDate()}
+        </div>
+      </div>
+
+      <div className="mt-2 space-y-1">
+        {dayEvents.slice(0, 2).map((ev, i) => (
+          <div
+            key={i}
+            className={`px-2 py-0.5 rounded-md text-xs truncate
+              ${
+                ev.priority === "High"
+                  ? "bg-red-100 text-red-700"
+                  : ev.priority === "Medium"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+          >
+            {ev.title}
+          </div>
+        ))}
+        {dayEvents.length > 2 && (
+          <div className="text-xs text-muted-foreground">
+            +{dayEvents.length - 2} more
+          </div>
+        )}
+      </div>
+    </button>
+  )
+})}
+
             </div>
           </div>
 

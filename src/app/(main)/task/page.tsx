@@ -2,12 +2,28 @@
 
 import * as React from "react"
 import { DndContext, useSensor, useSensors, PointerSensor, useDraggable, useDroppable, closestCenter } from "@dnd-kit/core"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetTrigger } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 type Task = {
   id: string
@@ -125,7 +141,7 @@ export default function TaskPage() {
   })
   const [open, setOpen] = React.useState(false)
   const [form, setForm] = React.useState({ title: "", description: "", assignee: "", due: "", priority: "Medium" })
-
+  
   const sensors = useSensors(
     useSensor(PointerSensor, {
       distance: 5,
@@ -314,15 +330,7 @@ export default function TaskPage() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">Kanban Board</h2>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => {
-              setColumns((prev) => ({ ...prev, todo: [] }))
-            }}
-          >
-            Clear Todo
-          </Button>
+          
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button>+ Add Task</Button>
@@ -377,17 +385,35 @@ export default function TaskPage() {
         onDragEnd={handleDragEnd}
         collisionDetection={closestCenter}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(['todo','inProgress','done'] as const).map((col) => (
-            <Column
-              key={col}
-              id={col}
-              title={col === 'todo' ? 'To Do' : col === 'inProgress' ? 'Doing' : 'Done'}
-              tasks={columns[col]}
-              onNativeDrop={(e) => handleNativeDrop(col, e)}
-            />
-          ))}
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <div className="bg-blue-100/60 rounded-3xl p-6">
+      <Column
+        id="todo"
+        title="To Do"
+        tasks={columns.todo}
+        onNativeDrop={(e) => handleNativeDrop("todo", e)}
+      />
+    </div>
+
+    <div className="bg-yellow-100/60 rounded-3xl p-6">
+      <Column
+        id="inProgress"
+        title="Doing"
+        tasks={columns.inProgress}
+        onNativeDrop={(e) => handleNativeDrop("inProgress", e)}
+      />
+    </div>
+
+    <div className="bg-green-100/60 rounded-3xl p-6">
+      <Column
+        id="done"
+        title="Done"
+        tasks={columns.done}
+        onNativeDrop={(e) => handleNativeDrop("done", e)}
+      />
+    </div>
+    </div>
       </DndContext>
     </div>
   )

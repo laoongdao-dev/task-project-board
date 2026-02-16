@@ -44,10 +44,10 @@ export function SiteHeader() {
           </Button>
 
           {/* Profile */}
-          <Avatar className="h-8 w-8">
+          {/* <Avatar className="h-8 w-8">
             <AvatarImage src="/avatar.png" />
             <AvatarFallback>LD</AvatarFallback>
-          </Avatar>
+          </Avatar> */}
         </div>
       )}
       </div>
