@@ -2,10 +2,8 @@
 
 import { useRouter } from "next/navigation"
 import {
-  IconCreditCard,
   IconDotsVertical,
   IconLogout,
-  IconNotification,
   IconUserCircle,
 } from "@tabler/icons-react"
 
@@ -29,25 +27,24 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useAuth } from "@/context/AuthContext"
+import { signOut } from "next-auth/react"
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string
-    email: string
-    avatar: string
+    name?: string | null
+    email?: string | null
+    image?: string | null
   }
 }) {
   const { isMobile } = useSidebar()
   const router = useRouter()
-  const { logout } = useAuth()
 
-  const handleLogout = () => {
-    logout()
-    router.push("/login")
-  }
+
+  const handleLogout = async () => {
+  await signOut({ callbackUrl: "/login" })
+}
 
   return (
     <SidebarMenu>
@@ -58,9 +55,10 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+              <Avatar className="h-9 w-9 rounded-full overflow-hidden">
+                <AvatarImage  src={user.image ?? "https://github.com/shadcn.png"}
+    alt={user.name ?? "avatar"} />
+                <AvatarFallback className="rounded-full">{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -79,9 +77,10 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <Avatar className="h-9 w-9 rounded-full overflow-hidden">
+                  <AvatarImage src={user.image ?? "https://github.com/shadcn.png"}
+    alt={user.name ?? "avatar"} className="h-full w-full object-cover"/>
+                  <AvatarFallback className="rounded-full">{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -93,17 +92,9 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/settings")}>
                 <IconUserCircle />
                 Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconNotification />
-                Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

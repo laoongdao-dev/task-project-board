@@ -6,58 +6,42 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { useAuth } from "@/context/AuthContext"
-import { useRegistration } from "@/context/RegistrationContext"
+import { signIn } from "next-auth/react"
+
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setUser } = useAuth()
-  const { validateLogin } = useRegistration()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    
-    if (!email || !password) {
-      setError("Please enter both email and password")
-      return
-    }
+  e.preventDefault()
+  setError("")
 
-    setIsLoading(true)
-
-    try {
-      // Validate user credentials against registered users
-      const registeredUser = validateLogin(email, password)
-
-      if (!registeredUser) {
-        setError("Email or password is incorrect, or account is not registered")
-        setIsLoading(false)
-        return
-      }
-
-      // Store user data
-      setUser({
-        name: registeredUser.name,
-        email: registeredUser.email,
-        avatar: "/avatars/shadcn.jpg",
-      })
-
-      // Set token cookie (client-side simulation)
-      document.cookie = `token=${email}; path=/; max-age=86400`
-      
-      // Redirect to dashboard
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Login failed:", error)
-      setError("Login failed. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
+  if (!email || !password) {
+    setError("Please enter both email and password")
+    return
   }
+
+  setIsLoading(true)
+
+  const res = await signIn("credentials", {
+    email,
+    password,
+    redirect: false,
+  })
+
+  setIsLoading(false)
+
+  if (res?.error) {
+    setError("Invalid email or password")
+  } else {
+    router.push("/dashboard")
+  }
+}
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">

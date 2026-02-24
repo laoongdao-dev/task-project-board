@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { useRegistration } from "@/context/RegistrationContext"
+
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { registerUser, userExists } = useRegistration()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -19,55 +18,49 @@ export default function SignUpPage() {
   const [error, setError] = useState("")
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    
-    if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill in all fields")
-      return
-    }
+  e.preventDefault()
+  setError("")
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters")
-      return
-    }
-
-    // Check if user already exists
-    if (userExists(email)) {
-      setError("This email is already registered")
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      // Register the user
-      const success = registerUser({
-        name,
-        email,
-        password,
-      })
-
-      if (!success) {
-        setError("Registration failed. Please try again.")
-        setIsLoading(false)
-        return
-      }
-
-      // Redirect to login after successful sign-up
-      router.push("/login")
-    } catch (error) {
-      setError("Sign up failed. Please try again.")
-      console.error("Sign up failed:", error)
-    } finally {
-      setIsLoading(false)
-    }
+  if (!name || !email || !password || !confirmPassword) {
+    setError("Please fill in all fields")
+    return
   }
+
+  if (password !== confirmPassword) {
+    setError("Passwords do not match")
+    return
+  }
+
+  if (password.length < 6) {
+    setError("Password must be at least 6 characters")
+    return
+  }
+
+  setIsLoading(true)
+
+  try {
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password }),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      setError(data.error || "Registration failed")
+      return
+    }
+
+    router.push("/login")
+  } catch (error) {
+    setError("Sign up failed. Please try again.")
+  } finally {
+    setIsLoading(false)
+  }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">

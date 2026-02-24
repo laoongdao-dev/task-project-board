@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import {
@@ -7,7 +8,8 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 
-export default function DashboardLayout({
+export default function MainLayout({
+  
     children,
 }: {
   children: React.ReactNode
@@ -22,7 +24,7 @@ export default function DashboardLayout({
       }
     >
       <AppSidebar variant="inset" />
-      <SidebarInset className="flex h-screen flex-col bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-100">
+      <SidebarInset className="flex min-h-screen flex-col ">
         <SiteHeader />
         <div className="flex flex-1 border-l border-border">
           <div className="@container/main flex flex-1 flex-col gap-2">

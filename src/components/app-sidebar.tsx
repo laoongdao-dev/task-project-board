@@ -5,16 +5,11 @@ import {
   IconCamera,
   IconCalendarWeek,
   IconLayoutDashboard,
-  IconDatabase,
+  IconChecklist,
   IconFileAi,
   IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
   IconInnerShadowTop,
   IconListDetails,
-  IconReport,
-  IconSearch,
   IconSettings,
   IconUsers,
 } from "@tabler/icons-react"
@@ -32,7 +27,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { useAuth } from "@/context/AuthContext"
+import { useSession } from "next-auth/react"
 
 const data = {
     navMain: [
@@ -47,14 +42,14 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Team",
-      url: "/team",
-      icon: IconUsers,
-    },
-    {
       title: "Calendar",
       url: "/calendar",
       icon: IconCalendarWeek,
+    },
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: IconSettings,
     },
     
   ],
@@ -107,11 +102,11 @@ const data = {
     },
   ],
   navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
+    // {
+    //   title: "Settings",
+    //   url: "#",
+    //   icon: IconSettings,
+    // },
   
   ],
   // documents: [
@@ -134,18 +129,14 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth()
-  
-  // Default user object if not logged in
-  const defaultUser = {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  }
-  
-  // Use logged-in user data or default
-  const displayUser = user || defaultUser
+  const { data: session } = useSession()
 
+const displayUser = {
+  name: session?.user?.name || "Guest",
+  email: session?.user?.email || "",
+  image: session?.user?.image ?? "https://github.com/shadcn.png",
+}
+  
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -156,7 +147,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <IconInnerShadowTop className="!size-5" />
+                <IconChecklist className="!size-8" />
                 <span className="text-base font-semibold">Task Board</span>
               </a>
             </SidebarMenuButton>
