@@ -34,13 +34,14 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import { useSearchParams } from "next/navigation"
-import { Calendar, Pencil, Trash2, Plus } from "lucide-react"
+import { Calendar, Pencil, Archive, Plus, ArchiveRestore } from "lucide-react"
 
 type Task = {
   id: string
   title: string
   description?: string
-  status: "todo" | "inProgress" | "done"
+  status: "todo" | "inProgress" | "done" | "archived"
+  previousStatus?: "todo" | "inProgress" | "done"
   dueDate?: string
   priority?: "High" | "Medium" | "Low"
 }
@@ -51,16 +52,23 @@ export default function TaskPage() {
   const [loading, setLoading] = React.useState(true)
   const searchParams = useSearchParams()
   const search = searchParams.get("search") || ""
+  const [viewMode, setViewMode] = React.useState<"active" | "archived">("active")
+  const [restoringTask, setRestoringTask] = React.useState<Task | null>(null)
 
   const filteredTasks = React.useMemo(() => {
-    if (!search.trim()) return tasks
+  const source =
+    viewMode === "active"
+      ? tasks.filter(t => t.status !== "archived")
+      : tasks.filter(t => t.status === "archived")
 
-    return tasks.filter((t) =>
-      t.title.toLowerCase().includes(search.toLowerCase()) ||
-      t.description?.toLowerCase().includes(search.toLowerCase()) ||
-      t.priority?.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [tasks, search])
+  if (!search.trim()) return source
+
+  return source.filter((t) =>
+    t.title.toLowerCase().includes(search.toLowerCase()) ||
+    t.description?.toLowerCase().includes(search.toLowerCase()) ||
+    t.priority?.toLowerCase().includes(search.toLowerCase())
+  )
+}, [tasks, search, viewMode])
 
   const [form, setForm] = React.useState({
     title: "",
@@ -202,23 +210,33 @@ export default function TaskPage() {
     }
   }
 
-  async function handleDeleteTask() {
+  async function handleArchiveTask() {
     if (!deletingTask) return
 
     try {
       const res = await fetch(`/api/tasks/${deletingTask.id}`, {
-        method: "DELETE",
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...deletingTask,
+          previousStatus: deletingTask.status,
+          status: "archived",
+       }),
       })
 
       if (!res.ok) throw new Error()
 
-      setTasks((prev) => prev.filter((t) => t.id !== deletingTask.id))
+      const updatedTask = await res.json()
+
+       setTasks((prev) =>
+      prev.map((t) => (t.id === deletingTask.id ? updatedTask : t))
+    )
 
       setDeletingTask(null)
 
-      toast.success("Task deleted successfully")
+      toast.success("Task archived successfully")
     } catch {
-      toast.error("Failed to delete task")
+      toast.error("Failed to archived task")
     }
   }
 
@@ -232,6 +250,32 @@ export default function TaskPage() {
       </div>
     )
   }
+
+  async function handleRestore(task: Task) {
+  try {
+    const res = await fetch(`/api/tasks/${task.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...task,
+        status: task.previousStatus || "todo",
+        previousStatus: null, 
+      }),
+    })
+
+    if (!res.ok) throw new Error()
+
+    const updated = await res.json()
+
+    setTasks(prev =>
+      prev.map(t => t.id === task.id ? updated : t)
+    )
+
+    toast.success("Task restored")
+  } catch {
+    toast.error("Failed to restore")
+  }
+}
 
   return (
     <div className="h-full w-full px-4 lg:px-6 xl:px-8 py-6">
@@ -309,6 +353,7 @@ export default function TaskPage() {
                 <Input
                   type="date"
                   value={form.dueDate}
+                  min={new Date().toISOString().split("T")[0]}
                   onChange={(e) =>
                     setForm((s) => ({ ...s, dueDate: e.target.value }))
                   }
@@ -340,35 +385,83 @@ export default function TaskPage() {
           </SheetContent>
         </Sheet>
       </div>
+        
+        <div className="flex items-center gap-2 mb-6">
+          <Button
+            variant={viewMode === "active" ? "default" : "outline"}
+            size="sm"
+            className="rounded-full px-5"
+            onClick={() => setViewMode("active")}
+          >
+            Active
+          </Button>
 
-      {/* Kanban Board */}
-      <DndContext
-        sensors={sensors}
-        onDragEnd={handleDragEnd}
-        collisionDetection={closestCenter}
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 xl:gap-6 auto-rows-fr">
-          {(["todo", "inProgress", "done"] as const).map((col) => (
-            <Column
-              key={col}
-              id={col}
-              title={col}
-              tasks={columns[col]}
-              search={search}
-              onEdit={(task) => {
-                setEditingTask(task)
-                setForm({
-                  title: task.title,
-                  description: task.description || "",
-                  dueDate: task.dueDate || "",
-                  priority: task.priority || "Medium",
-                })
-              }}
-              onDelete={setDeletingTask}
-            />
-          ))}
+          <Button
+            variant={viewMode === "archived" ? "default" : "outline"}
+            size="sm"
+            className="rounded-full px-5"
+            onClick={() => setViewMode("archived")}
+          >
+            Archived
+            <Badge className="ml-2 text-xs">
+              {tasks.filter(t => t.status === "archived").length}
+            </Badge>
+          </Button>
         </div>
-      </DndContext>
+
+        {/* Board Section */}
+        {viewMode === "active" ? (
+          <DndContext
+            sensors={sensors}
+            onDragEnd={handleDragEnd}
+            collisionDetection={closestCenter}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 xl:gap-6 auto-rows-fr">
+              {(["todo", "inProgress", "done"] as const).map((col) => (
+                <Column
+                  key={col}
+                  id={col}
+                  title={col}
+                  tasks={columns[col]}
+                  search={search}
+                  onEdit={(task) => {
+                    setEditingTask(task)
+                    setForm({
+                      title: task.title,
+                      description: task.description || "",
+                      dueDate: task.dueDate || "",
+                      priority: task.priority || "Medium",
+                    })
+                  }}
+                  onDelete={setDeletingTask}
+                />
+              ))}
+            </div>
+          </DndContext>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTasks.map((task) => (
+              <div key={task.id} className="relative">
+                <DraggableTask
+                  task={task}
+                  onEdit={() => {}}
+                  onDelete={() => {}}
+                  readOnly
+                />
+
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="absolute top-3 right-3 bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => setRestoringTask(task)}
+                >
+                  <ArchiveRestore className="h-3 w-3 mr-1" />
+                  Restore
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
 
       {/* Delete Dialog */}
       <AlertDialog
@@ -377,25 +470,53 @@ export default function TaskPage() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Task?</AlertDialogTitle>
+            <AlertDialogTitle>Archive Task?</AlertDialogTitle>
             <p className="text-sm text-muted-foreground mt-2">
-              This action cannot be undone. This will permanently delete the task.
+              This task will be moved to archived and can be restored later.
             </p>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteTask}
+              onClick={handleArchiveTask}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              Archive
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog
+          open={!!restoringTask}
+          onOpenChange={(o) => !o && setRestoringTask(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Restore Task?</AlertDialogTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                This task will be moved back to active board.
+              </p>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (restoringTask) handleRestore(restoringTask)
+                  setRestoringTask(null)
+                }}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                
+                Restore
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </div>
   )
 }
+
 
 function Column({
   id,
@@ -483,18 +604,23 @@ function DraggableTask({
   task,
   onEdit,
   onDelete,
+  readOnly = false,
 }: {
   task: Task
   onEdit: (task: Task) => void
   onDelete: (task: Task) => void
+  readOnly?: boolean
 }) {
   const [isHovered, setIsHovered] = React.useState(false)
   
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
+  const draggable =
     useDraggable({
       id: task.id,
+      disabled: readOnly,
     })
 
+  const { attributes, listeners, setNodeRef, transform, isDragging } = draggable
+  
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -525,13 +651,18 @@ function DraggableTask({
       onMouseLeave={() => setIsHovered(false)}
       className={`
         group rounded-xl border bg-card p-4 shadow-sm 
-        transition-all duration-200 
-        hover:shadow-md hover:-translate-y-1
+        transition-all duration-200
+        ${!readOnly && "hover:shadow-md hover:-translate-y-1"}
         ${isDragging ? 'shadow-lg scale-105 opacity-50' : ''}
+        ${readOnly ? "opacity-70" : ""}
       `}
     >
       {/* Drag Area */}
-      <div {...listeners} {...attributes} className="cursor-move">
+      <div
+        {...(!readOnly ? listeners : {})}
+        {...(!readOnly ? attributes : {})}
+        className={!readOnly ? "cursor-move" : ""}
+      >
         <h3 className="font-semibold text-sm leading-tight mb-2">
           {task.title}
         </h3>
@@ -570,13 +701,14 @@ function DraggableTask({
       </div>
 
       {/* Action Buttons - Show on hover */}
-      <div
-        className={`
-          flex items-center gap-1 mt-3 pt-2 border-t
-          transition-opacity duration-200
-          ${isHovered ? 'opacity-100' : 'opacity-0'}
-        `}
-      >
+      {!readOnly && (
+        <div
+          className={`
+            flex items-center gap-1 mt-3 pt-2 border-t
+            transition-opacity duration-200
+            ${isHovered ? 'opacity-100' : 'opacity-0'}
+          `}
+        >
         <Button
           variant="ghost"
           size="sm"
@@ -590,19 +722,22 @@ function DraggableTask({
           Edit
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete(task)
-          }}
-          className="h-7 text-xs hover:bg-destructive/10 hover:text-destructive px-2"
-        >
-          <Trash2 className="h-3 w-3 mr-1" />
-          Delete
-        </Button>
+        {task.status !== "archived" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(task)
+            }}
+            className="h-7 text-xs hover:bg-destructive/10 hover:text-destructive px-2"
+          >
+            <Archive className="h-3 w-3 mr-1" />
+            Archive
+          </Button>
+        )}
       </div>
+      )}
     </div>
   )
 }

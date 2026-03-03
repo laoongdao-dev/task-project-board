@@ -15,7 +15,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  GripVertical
 } from "lucide-react"
 
 function StatCard({ 
@@ -224,30 +223,11 @@ export default function Page() {
                   upcoming.map((t) => (
                     <div 
                       key={t.id} 
-                      draggable
-                      onDragStart={(e) => {
-                        try {
-                          e.dataTransfer.setData(
-                            "application/taskboard-section",
-                            JSON.stringify(t)
-                          )
-                          e.dataTransfer.effectAllowed = "move"
-                          window.__draggedSection = t
-                        } catch (err) {
-                          // ignore
-                        }
-                      }}
-                      onDragEnd={() => {
-                        try {
-                          window.__draggedSection = null
-                        } catch (err) {
-                          // ignore
-                        }
-                      }}
-                      className="group rounded-xl border bg-card p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                      
+                      className="group rounded-xl border bg-card p-3.5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
                     >
                       <div className="flex items-start gap-2.5">
-                        <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 shrink-0" />
+              
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <h4 className="font-semibold text-sm leading-tight">{t.title}</h4>
@@ -415,30 +395,11 @@ export default function Page() {
               filteredTasks.map((t) => (
                 <div 
                   key={t.id} 
-                  draggable
-                  onDragStart={(e) => {
-                    try {
-                      e.dataTransfer.setData(
-                        "application/taskboard-section",
-                        JSON.stringify(t)
-                      )
-                      e.dataTransfer.effectAllowed = "move"
-                      window.__draggedSection = t
-                    } catch (err) {
-                      // ignore
-                    }
-                  }}
-                  onDragEnd={() => {
-                    try {
-                      window.__draggedSection = null
-                    } catch (err) {
-                      // ignore
-                    }
-                  }}
-                  className="group rounded-xl border bg-card p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md transition-all"
+                  
+                  className="group rounded-xl border bg-card p-3.5 hover:shadow-md transition-all"
                 >
                   <div className="flex items-start gap-2">
-                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 shrink-0" />
+                    
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-sm">{t.title}</h4>
                       {t.description && (
@@ -490,30 +451,11 @@ export default function Page() {
               (selectedDate ? (eventsByDay.get(selectedDate) ?? []) : []).map((t) => (
                 <div 
                   key={t.id} 
-                  draggable
-                  onDragStart={(e) => {
-                    try {
-                      e.dataTransfer.setData(
-                        "application/taskboard-section",
-                        JSON.stringify(t)
-                      )
-                      e.dataTransfer.effectAllowed = "move"
-                      window.__draggedSection = t
-                    } catch (err) {
-                      // ignore
-                    }
-                  }}
-                  onDragEnd={() => {
-                    try {
-                      window.__draggedSection = null
-                    } catch (err) {
-                      // ignore
-                    }
-                  }}
-                  className="group rounded-xl border bg-card p-3.5 cursor-grab active:cursor-grabbing hover:shadow-md transition-all"
+  
+                  className="group rounded-xl border bg-card p-3.5 hover:shadow-md transition-all"
                 >
                   <div className="flex items-start gap-2">
-                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 shrink-0" />
+                    
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-sm">{t.title}</h4>
                       {t.description && (

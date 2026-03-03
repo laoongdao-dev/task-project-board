@@ -26,6 +26,7 @@ model Task {
   description String?
 
   status      String   @default("todo")
+  previousStatus  String?
   priority    String   @default("Medium")
   index       Int      @default(0)
 

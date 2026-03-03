@@ -77,7 +77,9 @@ export default function CalendarPage() {
   const [sheetOpen, setSheetOpen] = React.useState(false)
   const searchParams = useSearchParams()
   const [editingTask, setEditingTask] = React.useState<any | null>(null)
-  
+  const [viewOnly, setViewOnly] = React.useState(false)
+  const [selectedTasks, setSelectedTasks] = React.useState<any[]>([])
+
   const [form, setForm] = React.useState({
   title: "",
   description: "",
@@ -100,8 +102,20 @@ export default function CalendarPage() {
 
   function openAdd(date: Date) {
   const formatted = formatYYYYMMDD(date)
+  const todayStr = formatYYYYMMDD(new Date())
+  const dayTasks = eventsMap[formatted] || []
 
-  setEditingTask(null)
+  if (formatted < todayStr) {
+    // โหมดดูอย่างเดียว
+    setViewOnly(true)
+    setSelectedTasks(dayTasks)
+    setSheetOpen(true)
+    return
+  }
+
+  // โหมดเพิ่มงาน
+  setViewOnly(false)
+  setSelectedTasks([])
 
   setForm({
     title: "",
@@ -145,6 +159,13 @@ export default function CalendarPage() {
 
   async function addEvent(e: React.FormEvent) {
   e.preventDefault()
+
+  const todayStr = formatYYYYMMDD(new Date())
+
+  if (form.dueDate < todayStr) {
+    alert("Cannot create tasks in the past.")
+    return
+  }
 
   const res = await fetch("/api/tasks", {
     method: "POST",
@@ -203,6 +224,7 @@ export default function CalendarPage() {
   const isToday = key === formatYYYYMMDD(today)
   const inMonth = day.getMonth() === viewDate.getMonth()
   const dayEvents = eventsMap[key] || []
+  const isPast = key < formatYYYYMMDD(today)
 
   return (
     <button
@@ -280,6 +302,7 @@ export default function CalendarPage() {
         <Input
           placeholder="Enter task title"
           value={form.title}
+          disabled={viewOnly}
           onChange={(e) =>
             setForm((s) => ({ ...s, title: e.target.value }))
           }
@@ -294,6 +317,7 @@ export default function CalendarPage() {
           className="w-full min-h-[100px] rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           placeholder="Add a description..."
           value={form.description}
+          disabled={viewOnly}
           onChange={(e) =>
             setForm((s) => ({ ...s, description: e.target.value }))
           }
@@ -305,6 +329,8 @@ export default function CalendarPage() {
         <Input
           type="date"
           value={form.dueDate}
+          disabled={viewOnly}
+          min={new Date().toISOString().split("T")[0]}  
           onChange={(e) =>
             setForm((s) => ({ ...s, dueDate: e.target.value }))
           }
@@ -316,6 +342,7 @@ export default function CalendarPage() {
         <label className="text-sm font-medium">Priority</label>
         <select
           value={form.priority}
+          disabled={viewOnly}
           onChange={(e) =>
             setForm((s) => ({ ...s, priority: e.target.value }))
           }
@@ -328,9 +355,11 @@ export default function CalendarPage() {
       </div>
 
       <SheetFooter className="mt-8">
-        <Button type="submit" className="w-full h-11" size="lg">
-          {editingTask ? "Update Task" : "Create Task"}
-        </Button>
+        {!viewOnly && (
+          <Button type="submit" className="w-full h-11" size="lg">
+            Create Task
+          </Button>
+        )}
       </SheetFooter>
     </form>
   </SheetContent>
