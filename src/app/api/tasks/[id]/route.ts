@@ -17,7 +17,7 @@ export async function PUT(
     }
 
     const body = await req.json()
-    const { title, description, dueDate, priority, status } = body
+    const { title, description, dueDate, priority, status, previousStatus } = body
 
     const existingTask = await prisma.task.findFirst({
       where: {
@@ -38,6 +38,7 @@ export async function PUT(
         dueDate: dueDate ? new Date(dueDate) : null,
         priority,
         status,
+        previousStatus,
       },
     })
 
