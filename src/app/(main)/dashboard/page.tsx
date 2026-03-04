@@ -381,7 +381,7 @@ export default function Page() {
 
       {/* View All Drawer */}
       <Drawer open={viewAllOpen} onOpenChange={setViewAllOpen}>
-        <DrawerContent side="right" className="w-full sm:max-w-md">
+        <DrawerContent className="w-full sm:max-w-md">
           <DrawerHeader className="border-b border-border px-5 py-4">
             <DrawerTitle className="text-lg font-semibold">All Tasks</DrawerTitle>
           </DrawerHeader>
@@ -429,7 +429,7 @@ export default function Page() {
 
       {/* Day Drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <DrawerContent side="right" className="w-full sm:max-w-md">
+        <DrawerContent className="w-full sm:max-w-md">
           <DrawerHeader className="border-b px-5 py-4">
             <DrawerTitle className="text-lg font-semibold flex items-center gap-2">
               <CalendarIcon className="h-4 w-4" />
