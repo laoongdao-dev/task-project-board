@@ -21,7 +21,7 @@
     - แสดงจำนวนงานแยกตามสถานะ
     - แสดงงานใกล้ครบกำหนด
     - แสดงปฏิทินเพื่อดูงานในแต่ละวัน
-- 📝 เพิ่ม / แก้ไข / ลบ งาน (Task)
+- 📝 เพิ่ม / แก้ไข / จัดเก็บ งาน (Task)
 - 📌 แบ่งสถานะงานเป็น:
     - To Do
     - In Progress
@@ -46,7 +46,10 @@
 **Backend**
 - Next.js API Routes
 - Prisma ORM
-- PostgreSQL
+- Supabase (PostgreSQL)
+
+**Deployment**
+- Vercel
 
 **Authentication**
 - NextAuth.js
