@@ -61,6 +61,8 @@
 git clone https://github.com/username/project-name.git
 cd project-name
 npm install
+```
+---
 
 ## 👥 สมาชิก
 1. 67021130 ภัทรพล รัชนิกรเพ็ญ
