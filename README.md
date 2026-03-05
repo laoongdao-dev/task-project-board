@@ -61,3 +61,8 @@
 git clone https://github.com/username/project-name.git
 cd project-name
 npm install
+
+## 👥 สมาชิก
+1. 67021130 ภัทรพล รัชนิกรเพ็ญ
+2. 67021309 สลิลทิพย์ ดอกนางแย้ม
+3. 67026113 ละอองดาว ทาลาว
